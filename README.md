@@ -1,5 +1,7 @@
 # Crowd-Analysis-with-CNN
 
+For its network, I borrowed WideResNet from [here](https://github.com/nabenabe0928/wide-resnet-pytorch).  
+
 ## guidance
 input your own dataset - done  
 save&load weight - done  
