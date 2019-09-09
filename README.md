@@ -16,6 +16,10 @@ For its network, I borrowed WideResNet from [here](https://github.com/nabenabe09
 **video** - create density map video.  
 
 ## requirements 
-・python3.7 
-・pytorch 
+・python3.7  
+・pytorch   
     `conda install pytorch torchvision cudatoolkit=x.x -c pytorch` 
+    
+## instructions
+First of all, you need to prepare crowd dataset. You can make it with my annotating script named [Count-Annotator2](https://github.com/ba-san/Count-Annotator2).  
+Leave your dataset in 'dataset' directory.  
