@@ -5,7 +5,7 @@ For its network, I used WideResNet from [here](https://github.com/nabenabe0928/w
 ## guidance
 **classification&regression** - estimate just num of ppl in cropped img by classification approach or regression approach  
 
-**classification-test&regression-test** - can test trained network with different dataset you used for training.    
+**classification_test&regression_test** - can test trained network with different dataset you used for training.    
 
 **location** - with output from num of ppl estimating network (i.e. **classification&regression**), you can estimate exact coordinates of ppl in those imgs.  
 
