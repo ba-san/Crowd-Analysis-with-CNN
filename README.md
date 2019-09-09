@@ -3,11 +3,13 @@
 For its network, I used WideResNet from [here](https://github.com/nabenabe0928/wide-resnet-pytorch).  
 
 ## guidance
-**classification&regression** - estimate just num of ppl in cropped img by classification approach or regression approach  
+For detailed info, please check each directory.  
+
+**classification&regression** - estimate just number of people in cropped img by classification approach or regression approach  
 
 **classification_test&regression_test** - can test trained network with different dataset you used for training.    
 
-**location** - with output from num of ppl estimating network (i.e. **classification&regression**), you can estimate exact coordinates of ppl in those imgs.  
+**location** - with output from number of people estimating network (i.e. **classification&regression**), you can estimate exact coordinates of people in those imgs.  
 
 **frame** - create density map  
 
