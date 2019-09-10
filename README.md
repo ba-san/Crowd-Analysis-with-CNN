@@ -6,7 +6,8 @@ For its network, I used WideResNet from [here](https://github.com/nabenabe0928/w
 For detailed info, please check each directory.  
 
 ### number estimation
-https://user-images.githubusercontent.com/44015510/64597116-1d60b680-d3f0-11e9-8dfa-987ab1462a36.JPG
+<img src="https://user-images.githubusercontent.com/44015510/64597116-1d60b680-d3f0-11e9-8dfa-987ab1462a36.JPG" width="300"> 
+
 **classification&regression** - estimate just number of people in cropped img by classification approach or regression approach  
 
 **classification_test&regression_test** - can test trained network with different dataset you used for training.    
