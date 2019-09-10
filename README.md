@@ -6,14 +6,14 @@ For its network, I used WideResNet from [here](https://github.com/nabenabe0928/w
 For detailed info, please check each directory.  
 
 ### population estimation
-<img src="https://user-images.githubusercontent.com/44015510/64597117-1d60b6e9-9a66-cbb6305301c4.JPG" width="300"> 
+<img src="https://user-images.githubusercontent.com/44015510/64599784-fa84d100-d3f4-11e9-9f80-c33d37717a08.JPG" width="300"> 
 
 **classification&regression** - estimate just number of people in cropped img by classification approach or regression approach  
 
 **classification_test&regression_test** - can test trained network with different dataset you used for training.    
 
 ### density map
-<img src="https://user-images.githubusercontent.com/44015510/64597118-1df0-11e9-9b61-ce4f27a6bb79.JPG" width="300"> 
+<img src="https://user-images.githubusercontent.com/44015510/64599799-007ab200-d3f5-11e9-821c-0a3b25c4da83.JPG" width="300"> 
 
 **frame** - create density map  
 
@@ -22,7 +22,7 @@ For detailed info, please check each directory.
 **video** - create density map video.  
 
 ### location estimation
-<img src="https://user-images.githubusercontent.com/44015510/6459e9-8dfa-987ab1462a36.JPG" width="300"> 
+<img src="https://user-images.githubusercontent.com/44015510/64599810-05d7fc80-d3f5-11e9-84e5-ef6e9fbce0f4.JPG" width="300"> 
 
 **location** - with output from number of people estimating network (i.e. **classification&regression**), you can estimate exact coordinates of people in those imgs.  
 
