@@ -1,7 +1,5 @@
 import os
 import numpy as np
-import matplotlib.pyplot as plt
-
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn import svm, datasets
@@ -74,8 +72,6 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, stop=1.0, name='shiftedcmap'):
 
     return newcmap
     
-    
-    
 
 def draw_graph(epoch_all, epoch_now, train_acc, train_loss, test_acc, test_loss, training_name, save_place=None):
 	global whether_first, fig1, fig2
@@ -94,13 +90,17 @@ def draw_graph(epoch_all, epoch_now, train_acc, train_loss, test_acc, test_loss,
 	plt.plot(epochs, train_accs, 'bo', label='Training acc')
 	plt.plot(epochs, test_accs, 'b', label='Test acc')
 	plt.title('Training and test accuracy; '+ training_name)
-	plt.legend()
+	plt.grid(b=True)
+	plt.tick_params(labelsize=15)
+	plt.legend(fontsize=15)
 	
 	fig2 = plt.figure()
 	plt.plot(epochs, train_losses, 'ro', label='Training loss')
 	plt.plot(epochs, test_losses, 'r', label='Test loss')
 	plt.title('Training and test loss; ' + training_name)
-	plt.legend()
+	plt.grid(b=True)
+	plt.tick_params(labelsize=15)
+	plt.legend(fontsize=15)
 	
 	plt.pause(0.1)
 	
@@ -111,7 +111,7 @@ def draw_graph(epoch_all, epoch_now, train_acc, train_loss, test_acc, test_loss,
 	fig2.savefig('Training and test loss; ' + training_name)
 	fig1.savefig(save_place + 'Training and test accuracy; '+ training_name)
 	fig2.savefig(save_place + 'Training and test loss; ' + training_name)
-		
+
 def draw_graph_regress(epoch_all, epoch_now, train_loss, test_loss, training_name, save_place=None, ymax=None):
 	global whether_first, fig, ymax_regress
 	train_losses.append(train_loss)
@@ -128,11 +128,12 @@ def draw_graph_regress(epoch_all, epoch_now, train_loss, test_loss, training_nam
 	
 	fig = plt.figure()
 	plt.ylim(0.0, ymax_regress)
-	plt.plot(epochs, train_losses, 'navy', label='Training loss')
-	plt.plot(epochs, test_losses, 'gold', label='Test loss')
+	plt.plot(epochs, train_losses, 'ro', label='Training loss')
+	plt.plot(epochs, test_losses, 'r', label='Test loss')
 	plt.title('Training and test loss; ' + training_name)
-	plt.legend()
-	
+	plt.grid(b=True)
+	plt.tick_params(labelsize=15)
+	plt.legend(fontsize=15)
 	plt.pause(0.1)
 	
 	whether_first = 0
@@ -156,7 +157,7 @@ def yyplot(y_obs, y_pred, binary_name, save_place=None):
     if binary_name == True:
         plt.title('Train;Observed-Predicted Plot', fontsize=24)
     else:
-	    plt.title('Test;Observed-Predicted Plot', fontsize=24)
+        plt.title('Test;Observed-Predicted Plot', fontsize=24)
     plt.tick_params(labelsize=16)
 
     if binary_name == True:
@@ -202,7 +203,7 @@ def yyplot_density(y_obs, y_pred, binary_name, save_place=None): #y_obs and y_pr
     if binary_name == True:
         plt.title('Train;Observed-Predicted Plot', fontsize=24)
     else:
-	    plt.title('Test;Observed-Predicted Plot', fontsize=24)
+        plt.title('Test;Observed-Predicted Plot', fontsize=24)
     plt.tick_params(labelsize=16)
 
     if binary_name == True:
@@ -219,7 +220,8 @@ def yyplot_density(y_obs, y_pred, binary_name, save_place=None): #y_obs and y_pr
 def plot_confusion_matrix(y_true, y_pred, classes, save_caption,
                           save_place=None,
                           normalize=False,
-                          cmap=plt.cm.Blues
+                          cmap=plt.cm.Blues,
+                          vmax = None
                           ):
     """
     This function prints and plots the confusion matrix.
@@ -245,7 +247,7 @@ def plot_confusion_matrix(y_true, y_pred, classes, save_caption,
         title = 'accuracy={:.3f},1psn={:.3f},2ppl={:.3f},MSE={:.3f}'.format(accuracy, accuracy_1err_ok, accuracy_2err_ok, mse)
 
     fig_mx, ax = plt.subplots()
-    im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
+    im = ax.imshow(cm, interpolation='nearest', cmap=cmap, vmax=vmax)
     ax.figure.colorbar(im, ax=ax)
     # We want to show all ticks...
     ax.set(xticks=np.arange(cm.shape[1]),
@@ -266,7 +268,7 @@ def plot_confusion_matrix(y_true, y_pred, classes, save_caption,
     for i in range(cm.shape[0]):
         for j in range(cm.shape[1]):
             ax.text(j, i, format(cm[i, j], fmt),
-                    ha="center", va="center", fontsize=7,
+                    ha="center", va="center", fontsize=11,
                     color="white" if cm[i, j] > thresh else "black")
    
     fig_mx.tight_layout()
@@ -327,24 +329,24 @@ def ppl_in_frame(pixels, width, height, side, name, save_place=None, caltype="av
     if caltype=="diff":
         #shifted_cmap = shiftedColorMap(plt.cm.coolwarm, midpoint=0.25765, name='shifted')
         #im = ax.imshow(cell, interpolation='nearest', cmap=shifted_cmap)
-        im = ax.imshow(cell, interpolation='nearest', cmap=plt.cm.coolwarm, vmax=3.0, vmin=-3.0)
+        im = ax.imshow(cell, interpolation='nearest', cmap=plt.cm.RdBu_r, vmax=4.0, vmin=-4.0)
     else:
-        im = ax.imshow(cell, interpolation='nearest', cmap=plt.cm.Blues)
+        im = ax.imshow(cell, interpolation='nearest', cmap=plt.cm.Blues, vmax=9.0, vmin=0.0)
     ax.figure.colorbar(im, ax=ax)
     # We want to show all ticks...
     
     x_label = []
     y_label = []
-    for i in range(num_x_cell):
-        if i==num_x_cell-1:
-            x_label.append('{}~{}'.format(i*32, width-1))
-        else:
-            x_label.append('{}~{}'.format(i*32, (i+1)*32-1))
-    for i in range(num_y_cell):
-        if i==num_y_cell-1:
-            y_label.append('{}~{}'.format(i*32, height-1))
-        else:
-            y_label.append('{}~{}'.format(i*32, (i+1)*32-1))
+    #for i in range(num_x_cell):
+        #if i==num_x_cell-1:
+            #x_label.append('{}~{}'.format(i*32, width-1))
+        #else:
+            #x_label.append('{}~{}'.format(i*32, (i+1)*32-1))
+    #for i in range(num_y_cell):
+        #if i==num_y_cell-1:
+            #y_label.append('{}~{}'.format(i*32, height-1))
+        #else:
+            #y_label.append('{}~{}'.format(i*32, (i+1)*32-1))
     if caltype=="diff":
         ax.set(xticks=np.arange(num_x_cell),
                yticks=np.arange(num_y_cell),
@@ -373,11 +375,11 @@ def ppl_in_frame(pixels, width, height, side, name, save_place=None, caltype="av
         for j in range(num_x_cell):
             if caltype=="diff":
                 ax.text(j, i, format(cell[i, j], fmt),
-                        ha="center", va="center", fontsize=7,
+                        ha="center", va="center", fontsize=12,
                         color="white" if abs(cell[i, j]) > 1.5 else "black")
             else:
                 ax.text(j, i, format(cell[i, j], fmt),
-                        ha="center", va="center", fontsize=7,
+                        ha="center", va="center", fontsize=12,
                         color="white" if cell[i, j] > thresh else "black")
    
     fig_mx.tight_layout()
@@ -407,41 +409,36 @@ def ppl_in_cell(pixels, width, height, side, name, save_place=None, caltype="sum
     if caltype=="diff":
         #shifted_cmap = shiftedColorMap(plt.cm.coolwarm, midpoint=0.25765, name='shifted')
         #im = ax.imshow(cell, interpolation='nearest', cmap=shifted_cmap)
-        im = ax.imshow(cell, interpolation='nearest', cmap=plt.cm.coolwarm, vmax=3.0, vmin=-3.0)
+        im = ax.imshow(cell, interpolation='nearest', cmap=plt.cm.RdBu_r, vmax=4.0, vmin=-4.0)
     else:
-        im = ax.imshow(cell, interpolation='nearest', cmap=plt.cm.Blues)
+        im = ax.imshow(cell, interpolation='nearest', cmap=plt.cm.Blues, vmax=9.0, vmin=0.0)
     ax.figure.colorbar(im, ax=ax)
     # We want to show all ticks...
     
     x_label = []
     y_label = []
-    for i in range(num_x_cell):
-        if i==num_x_cell-1:
-            x_label.append('{}~{}'.format(i*32, width-1))
-        else:
-            x_label.append('{}~{}'.format(i*32, (i+1)*32-1))
-    for i in range(num_y_cell):
-        if i==num_y_cell-1:
-            y_label.append('{}~{}'.format(i*32, height-1))
-        else:
-            y_label.append('{}~{}'.format(i*32, (i+1)*32-1))
+    #for i in range(num_x_cell):
+        #if i==num_x_cell-1:
+            #x_label.append('{}~{}'.format(i*32, width-1))
+        #else:
+            #x_label.append('{}~{}'.format(i*32, (i+1)*32-1))
+    #for i in range(num_y_cell):
+        #if i==num_y_cell-1:
+            #y_label.append('{}~{}'.format(i*32, height-1))
+        #else:
+            #y_label.append('{}~{}'.format(i*32, (i+1)*32-1))
     if caltype=="diff":
-        ax.set(xticks=np.arange(num_x_cell),
-               yticks=np.arange(num_y_cell),
+        ax.set(xticks=np.arange(0),
+               yticks=np.arange(0),
                # ... and label them with the respective list entries
                xticklabels=x_label, yticklabels=y_label,
-               title='difference;{} RMSE;{:.4f}'.format(total, rmse),
-               ylabel='Y coordination',
-               xlabel='X coordination')
+               title='difference;{:.2f} RMSE;{:.4f}'.format(total, rmse))
     else:
-        ax.set(xticks=np.arange(num_x_cell),
-               yticks=np.arange(num_y_cell),
+        ax.set(xticks=np.arange(0),
+               yticks=np.arange(0),
                # ... and label them with the respective list entries
                xticklabels=x_label, yticklabels=y_label,
-               title='total;{}'.format(total),
-               ylabel='Y coordination',
-               xlabel='X coordination')
-
+               title='total;{}'.format(total))
            
     # Rotate the tick labels and set their alignment.
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
@@ -454,11 +451,11 @@ def ppl_in_cell(pixels, width, height, side, name, save_place=None, caltype="sum
         for j in range(num_x_cell):
             if caltype=="diff":
                 ax.text(j, i, format(cell[i, j], fmt),
-                        ha="center", va="center", fontsize=7,
-                        color="white" if abs(cell[i, j]) > 1.5 else "black")
+                        ha="center", va="center", fontsize=12,
+                        color="white" if abs(cell[i, j]) > 1.9 else "black")
             else:
                 ax.text(j, i, format(cell[i, j], fmt),
-                        ha="center", va="center", fontsize=7,
+                        ha="center", va="center", fontsize=12,
                         color="white" if cell[i, j] > thresh else "black")
    
     fig_mx.tight_layout()

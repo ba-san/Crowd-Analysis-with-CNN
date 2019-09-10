@@ -24,23 +24,6 @@ from wide_resnet_regress import WideResNet
 
 from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
-
-####### original parameters #######
-
-    #hp = {"batch_size": 128,
-           #"lr": 1.0e-1,
-           #"momentum": 0.9,
-           #"weight_decay": 5.0e-4,
-           #"width_coef1": 10,
-           #"width_coef2": 10,
-           #"width_coef3": 10,
-           #"n_blocks1": 4,
-           #"n_blocks2": 4,
-           #"n_blocks3": 4,
-           #"drop_rates1": 0.3,
-           #"drop_rates2": 0.3,
-           #"drop_rates3": 0.3,
-           #"lr_decay": 0.2}
            
 def get_arguments():
     argp = ArgPar()
@@ -200,4 +183,3 @@ if __name__ == "__main__":
     print("Start Testing")
     print("")
     main(learner)
-

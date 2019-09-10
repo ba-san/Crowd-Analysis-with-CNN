@@ -14,23 +14,27 @@ from torch.utils.data import Dataset
 from PIL import Image
 
 PWD = os.path.dirname(os.getcwd())
-files = "/dataset/4test-320x180_output"
+#files = "/dataset/4test-320x180_output"
+files = "/dataset/4test-352x212_output"
 fname_splited = os.path.basename(files).split('_')
 full_path = PWD + files
 dataset_directory = PWD
 dataset_folder = files
-ori_width = 320
-ori_height = 180
+ori_width = 352-32
+ori_height = 212-32
 culm_cnt = 0
 
-num_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+num_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] # num of people in cropped imgs
 
 csv_path=full_path + '/' + fname_splited[0] + '.csv'
 df = pd.read_csv(csv_path, index_col=0)
 frm_paths = df['image']
-frame = cv2.imread(frm_paths[1] + '_checked/LAST/0.jpg')
+frm_name = frm_paths[1].split('/')[-1]
+#reading_path = full_path + '/' + frm_name.split('_')[0] + '-full_' + frm_name.split('_')[1] + '_checked/LAST/0.jpg'
+reading_path = full_path + '/' + frm_name + '_checked/LAST/0.jpg'
+frame = cv2.imread(reading_path)
 ###################################################################
-    
+
 class CellDataset(Dataset):
 
     def __init__(self, transform=None):
@@ -47,7 +51,7 @@ class CellDataset(Dataset):
         if self.transform is not None:
             img = self.transform(img)
             
-        cnt = 0       
+        cnt = 0
         for pt in range(len(df)): # http://www.kisse-logs.com/2017/04/11/python-dataframe-drop/
             if df.loc[pt, 'image'] == frm_paths[1]: #double check
                 pt_x = df.loc[pt, 'x']
@@ -76,6 +80,6 @@ def get_data(batch_size):
                         transform = transform_test
                         )
                         
-    test_data = torch.utils.data.DataLoader(test_dataset, batch_size = batch_size, shuffle = False, num_workers = 0, pin_memory = True)
+    test_data = torch.utils.data.DataLoader(test_dataset, batch_size = batch_size, shuffle = False, num_workers = 64, pin_memory = True)
     
     return test_data

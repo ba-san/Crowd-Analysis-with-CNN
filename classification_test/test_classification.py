@@ -15,10 +15,10 @@ import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import torch.optim as optim
 import datetime
-from dataset4test import get_data
-import dataset4test
+from dataset4class_test import get_data
+import dataset4class_test
 from tqdm import tqdm
-from wide_resnet import WideResNet
+from wide_resnet_classification import WideResNet
 
 import matplotlib.pyplot as plt
 
@@ -57,8 +57,8 @@ def accuracy4test(y, target):
     acc = pred.eq(target.data.view_as(pred)).cpu().sum()
     pred_total.extend(pred.cpu())
     target_total.extend(target.cpu())
-    save_caption = "dataset;" + os.path.basename(dataset4test.dataset_folder) + " model;" + model 
-    draw_graph.plot_confusion_matrix(target_total, pred_total, dataset4test.test_classes.keys(), save_caption=save_caption, save_place='./cross_test_results/')
+    save_caption = "dataset;" + os.path.basename(dataset4class_test.dataset_folder) + " model;" + model 
+    draw_graph.plot_confusion_matrix(target_total, pred_total, dataset4class_test.test_classes.keys(), save_caption=save_caption, save_place='./cross_test_results/')
 
     return acc
 
@@ -102,15 +102,12 @@ def test(device, optimizer, learner, test_data, loss_func):
     return float(test_acc) / n_test, test_loss / n_test
 
 def main(learner):
-
-    #now = datetime.datetime.now()
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     if device == 'cuda':
         learner = torch.nn.DataParallel(learner, device_ids=[0, 1, 2]) # make parallel
     
-    test_data = get_data(learner.batch_size) # get_data is only used here. the cause seems to be in test_data
+    test_data = get_data(learner.batch_size)
     
     learner = learner.to(device)
     cudnn.benchmark = True
@@ -125,15 +122,13 @@ def main(learner):
     
     loss_func = nn.CrossEntropyLoss().cuda()
 
-
     rsl_keys = ["TestAcc", "TestLoss"]
     rsl = []
-    y_out = 1.0e+8
     
     print_result(rsl_keys)
     global model
-    model = "4frames-extracted_output_x_x_18_18_0_resized_32_32_0716_2155.pth" # set model here
-    learner.load_state_dict(torch.load('../dataset/4frames-extracted_output_x_x_18_18_0_resized_32_32/log/0716_2155/' + model))  # set pretrained model here!
+    model = "C0017_output_256_256_18_18_0_resized_32_32_0910_1523.pth" # set model here
+    learner.load_state_dict(torch.load('../dataset/C0017_output_256_256_18_18_0_resized_32_32/log/0910_1523/' + model))  # set pretrained model here!
     learner.eval() # switch to test mode (make model not save the record of calculation)
         
     lr = optimizer.param_groups[0]["lr"]     
@@ -144,7 +139,6 @@ def main(learner):
     time_now = str(datetime.datetime.today())
     rsl.append({k: v for k, v in zip(rsl_keys, [test_acc, test_loss])})
        
-    y_out = min(y_out, test_loss)
     print_result(rsl[-1].values())
 
         

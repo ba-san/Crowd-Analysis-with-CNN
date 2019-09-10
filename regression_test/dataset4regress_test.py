@@ -13,7 +13,7 @@ from torch.utils.data import Dataset
 from PIL import Image
 
 PWD = os.path.dirname(os.getcwd())
-files = "/dataset/4frames-extracted_output_x_x_18_18_0_resized_32_32"
+files = "/dataset/C0017_output_256_256_18_18_0_resized_32_32"
 full_path = PWD + files
 test_files = glob.glob(full_path + "/test/*/*")
 print(len(test_files))
@@ -24,7 +24,6 @@ d = {}
 d['num'] = []
 d['file'] = []
 d['path'] = []
-
 
 for f in test_files:
     f_split = f.split('/')
@@ -76,7 +75,6 @@ def get_data(batch_size):
    
     transform_test = transforms.Compose([
                                 transforms.ToTensor()])
-                                #normalize])
 
     test_dataset = CrowdDataset(
                         csv_path=full_path + '/df_test.csv',

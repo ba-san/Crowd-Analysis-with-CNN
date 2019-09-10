@@ -8,6 +8,7 @@ sys.path.append('../../')
 import cv2
 import math
 import glob
+import random
 import shutil
 import datetime
 import traceback
@@ -21,11 +22,12 @@ import datetime
 from dataset4loc_1 import get_data
 import dataset4loc_1
 from tqdm import tqdm
-from wide_resnet_loc_1 import WideResNet
+from wide_resnet_loc_1 import WideResNet  # change here if you do transfer learning
 
 from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
 
+random.seed(32)
 
 ####### original parameters #######
 
@@ -46,8 +48,8 @@ import matplotlib.pyplot as plt
            
 def get_arguments():
     argp = ArgPar()
-    hp = {"batch_size": 128,
-          "lr": 1.0e-2,
+    hp = {"batch_size": 64,  #changed
+          "lr": 1.0e-2,      #changed
           "momentum": 0.9,
           "weight_decay": 5.0e-4,
           "width_coef1": 10,
@@ -112,8 +114,8 @@ def train(device, optimizer, learner, train_data, loss_func):
         target_total_train.extend(target)
 
         optimizer.zero_grad() # clears the gradients of all optimized tensors for next train.
-        loss.backward()  # backpropagation, compute gradients
-        optimizer.step() # apply gradients. renew learning rate.
+        loss.backward()       # backpropagation, compute gradients
+        optimizer.step()      # apply gradients. renew learning rate.
 
         train_loss += loss.item() * len(target[0]) # loss.item() is a loss num, but not a tensor. target.size(0) is batch size.
         n_train += len(target[0])
@@ -122,6 +124,47 @@ def train(device, optimizer, learner, train_data, loss_func):
         
         bar.update()
     bar.close()
+    
+    #if loc_check==True:
+    #if (epoch>1 and epoch%40==0) or epoch==199:
+    if epoch==999:
+        extract_num = 500
+        hp_for_record= get_arguments()
+        bs = hp_for_record["batch_size"]
+        if os.path.exists(dataset4loc_1.full_path + '/log/{0:%m%d}_{0:%H%M}/train-pred-{1}/'.format(now, epoch)):
+            shutil.rmtree(dataset4loc_1.full_path + '/log/{0:%m%d}_{0:%H%M}/train-pred-{1}/'.format(now, epoch))
+        os.makedirs(dataset4loc_1.full_path + '/log/{0:%m%d}_{0:%H%M}/train-pred-{1}/'.format(now, epoch))
+
+        bar = tqdm(desc = "dotting", total = extract_num, leave = False)
+        f = open(dataset4loc_1.full_path + '/log/{0:%m%d}_{0:%H%M}/train-pred-{1}/'.format(now, epoch) + str(epoch) + '-pred-locations.txt', 'w')
+        
+        random_extract_list = random.sample(range(len(paths_total)), k=extract_num)
+
+        for i in random_extract_list:
+            path_separated = paths_total[i].split('/')
+            img_lists = glob.glob(dataset4loc_1.full_path + '/train/*/*'.format(now, epoch))
+            img_file = [s for s in img_lists if path_separated[-1] in s]
+            img = cv2.imread(img_file[0])
+            new_img_file = img_file[0].split('/')
+            
+            f.write('{}\n'.format(os.path.basename(img_file[0])))
+            f.write('prediction  :{},{}\n'.format(int(loc_total_train[i][0]), int(loc_total_train[i][1])))
+            f.write('ground truth:{},{}\n\n'.format(int(target_total_train[int(i/bs)][i%bs]), int(target_total_train[int(i/bs)][i%bs])))
+               
+            if 0<=int(loc_total_train[i][1])<img.shape[1] and 0<=int(loc_total_train[i][0])<img.shape[0]:
+                img[int(loc_total_train[i][1]), int(loc_total_train[i][0])] = [18, 0, 230] # red
+                if int(loc_total_train[i][1])+1 < img.shape[1]:
+                    img[int(loc_total_train[i][1])+1, int(loc_total_train[i][0])] = [18, 0, 230]
+                if int(loc_total_train[i][1])-1 >= 0:
+                    img[int(loc_total_train[i][1])-1, int(loc_total_train[i][0])] = [18, 0, 230]
+                if int(loc_total_train[i][0])+1 < img.shape[0]:
+                    img[int(loc_total_train[i][1]), int(loc_total_train[i][0])+1] = [18, 0, 230]
+                if int(loc_total_train[i][0])-1 >= 0:    
+                    img[int(loc_total_train[i][1]), int(loc_total_train[i][0])-1] = [18, 0, 230]
+            cv2.imwrite(dataset4loc_1.full_path + '/log/{0:%m%d}_{0:%H%M}/train-pred-{1}/'.format(now, epoch) + new_img_file[-1], img)
+            bar.update()
+        bar.close()
+        f.close()
 
     return train_loss / n_train
 
@@ -162,35 +205,40 @@ def test(device, optimizer, learner, test_data, loss_func):
     
     #if loc_check==True:
     if (epoch>1 and epoch%40==0) or epoch==199:
+        extract_num = 500
         hp_for_record= get_arguments()
         bs = hp_for_record["batch_size"]
         if os.path.exists(dataset4loc_1.full_path + '/log/{0:%m%d}_{0:%H%M}/test-pred-{1}/'.format(now, epoch)):
             shutil.rmtree(dataset4loc_1.full_path + '/log/{0:%m%d}_{0:%H%M}/test-pred-{1}/'.format(now, epoch))
-        shutil.copytree(os.path.join(dataset4loc_1.full_path, "test"), dataset4loc_1.full_path + '/log/{0:%m%d}_{0:%H%M}/test-pred-{1}/'.format(now, epoch))
-        
-        bar = tqdm(desc = "dotting", total = len(paths_total), leave = False)
+        os.makedirs(dataset4loc_1.full_path + '/log/{0:%m%d}_{0:%H%M}/test-pred-{1}/'.format(now, epoch))
+
+        bar = tqdm(desc = "dotting", total = extract_num, leave = False)
         f = open(dataset4loc_1.full_path + '/log/{0:%m%d}_{0:%H%M}/test-pred-{1}/'.format(now, epoch) + str(epoch) + '-pred-locations.txt', 'w')
-        for i in range(len(paths_total)):
+
+        random_extract_list = random.sample(range(len(paths_total)), k=extract_num)
+
+        for i in random_extract_list:
             path_separated = paths_total[i].split('/')
-            img_lists = glob.glob(dataset4loc_1.full_path + '/log/{0:%m%d}_{0:%H%M}/test-pred-{1}/*/*'.format(now, epoch))
+            img_lists = glob.glob(dataset4loc_1.full_path + '/test/*/*'.format(now, epoch))
             img_file = [s for s in img_lists if path_separated[-1] in s]
             img = cv2.imread(img_file[0])
+            new_img_file = img_file[0].split('/')
             
             f.write('{}\n'.format(os.path.basename(img_file[0])))
             f.write('prediction  :{},{}\n'.format(int(loc_total_test[i][0]), int(loc_total_test[i][1])))
             f.write('ground truth:{},{}\n\n'.format(int(target_total_test[int(i/bs)][i%bs]), int(target_total_test[int(i/bs)][i%bs])))
                
             if 0<=int(loc_total_test[i][1])<img.shape[1] and 0<=int(loc_total_test[i][0])<img.shape[0]:
-                img[int(loc_total_test[i][1]), int(loc_total_test[i][0])] = [0, 0, 255]
+                img[int(loc_total_test[i][1]), int(loc_total_test[i][0])] = [18, 0, 230] # red
                 if int(loc_total_test[i][1])+1 < img.shape[1]:
-                    img[int(loc_total_test[i][1])+1, int(loc_total_test[i][0])] = [0, 0, 255]
+                    img[int(loc_total_test[i][1])+1, int(loc_total_test[i][0])] = [18, 0, 230]
                 if int(loc_total_test[i][1])-1 >= 0:
-                    img[int(loc_total_test[i][1])-1, int(loc_total_test[i][0])] = [0, 0, 255]
+                    img[int(loc_total_test[i][1])-1, int(loc_total_test[i][0])] = [18, 0, 230]
                 if int(loc_total_test[i][0])+1 < img.shape[0]:
-                    img[int(loc_total_test[i][1]), int(loc_total_test[i][0])+1] = [0, 0, 255]
+                    img[int(loc_total_test[i][1]), int(loc_total_test[i][0])+1] = [18, 0, 230]
                 if int(loc_total_test[i][0])-1 >= 0:    
-                    img[int(loc_total_test[i][1]), int(loc_total_test[i][0])-1] = [0, 0, 255]
-            cv2.imwrite(img_file[0], img)
+                    img[int(loc_total_test[i][1]), int(loc_total_test[i][0])-1] = [18, 0, 230]
+            cv2.imwrite(dataset4loc_1.full_path + '/log/{0:%m%d}_{0:%H%M}/test-pred-{1}/'.format(now, epoch) + new_img_file[-1], img)
             bar.update()
         bar.close()
         f.close()
@@ -198,38 +246,43 @@ def test(device, optimizer, learner, test_data, loss_func):
     return test_loss / n_test
 
 
-global now
 def main(learner):
 
     device = "cuda"
+    
+    ## load pretrained model ##
+    global model
+    model = "loc-1-extensive-extracted_output_x_x_x_x_x_resized_x_x_0820_2220_66.pth" # set model here
+    learner.load_state_dict(torch.load('/mnt/CrowdData/dataset/resized/loc-1/loc-1-extensive-extracted_output_x_x_x_x_x_resized_x_x/log/0820_2220/models/' + model))
+    learner.full_conn = nn.Linear(in_features=640, out_features=2, bias=True)
+    learner.variance4pool = 12
+    ###########################
+
     learner = torch.nn.DataParallel(learner, device_ids=[0, 1]) # make parallel
 
     train_data, test_data = get_data(learner.module.batch_size)
     
     global now
     now = datetime.datetime.now()
-    if not os.path.exists(dataset4loc_1.dataset_directory  + dataset4loc_1.dataset_folder + '/log/{0:%m%d}_{0:%H%M}'.format(now, now)):
-        os.makedirs(dataset4loc_1.dataset_directory  + dataset4loc_1.dataset_folder + '/log/{0:%m%d}_{0:%H%M}'.format(now, now))
+    if not os.path.exists(dataset4loc_1.dataset_directory  + dataset4loc_1.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/models'.format(now)):
+        os.makedirs(dataset4loc_1.dataset_directory  + dataset4loc_1.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/models'.format(now))
+        shutil.copyfile("./train_loc_1.py", dataset4loc_1.dataset_directory  + dataset4loc_1.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/train_loc_1_{0:%m%d}_{0:%H%M}.py'.format(now))
+        shutil.copyfile("./dataset4loc_1.py", dataset4loc_1.dataset_directory  + dataset4loc_1.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/dataset4loc_1_{0:%m%d}_{0:%H%M}.py'.format(now))
     
     learner = learner.to(device)
     cudnn.benchmark = True
 
     optimizer = optim.SGD( \
                         learner.parameters(), \
-                        #lr = learner.lr, \
                         lr = learner.module.lr, \
-                        #momentum = learner.momentum, \
                         momentum = learner.module.momentum, \
-                        #weight_decay = learner.weight_decay, \
                         weight_decay = learner.module.weight_decay, \
                         nesterov = True \
                         )
     
     loss_mse = nn.MSELoss().cuda()
 
-    #milestones = learner.lr_step
     milestones = learner.module.lr_step
-    #scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones = milestones, gamma = learner.lr_decay)
     scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones = milestones, gamma = learner.module.lr_decay)
 
     rsl_keys = ["lr", "epoch", "TrainLoss", "TestLoss", "Time"]
@@ -238,12 +291,11 @@ def main(learner):
     print_result(rsl_keys)
     
     global patience, counter, best_loss, epoch
-    patience = 200 #set any adequate number here
+    patience = 20 #set any adequate number here
     counter = 0
     earlystopper = 0
     best_loss = None
     
-    #for epoch in range(learner.epochs):
     for epoch in range(learner.module.epochs):
         
         lr = optimizer.param_groups[0]["lr"] 
@@ -268,14 +320,14 @@ def main(learner):
             else:
                 best_loss = test_loss
                 counter = 0
+                torch.save(learner.module.state_dict(), dataset4loc_1.dataset_directory  + dataset4loc_1.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/models/'.format(now, now) + os.path.basename(dataset4loc_1.dataset_folder) + '_{0:%m%d}_{0:%H%M}_{1}.pth'.format(now, epoch))
             ######################
 
 
         time_now = str(datetime.datetime.today())
         rsl.append({k: v for k, v in zip(rsl_keys, [lr, epoch + 1, train_loss, test_loss, time_now])})
      
-        #draw_graph.draw_graph_regress(learner.epochs, epoch, train_loss, test_loss, os.path.basename(dataset4loc_1.dataset_folder), save_place=dataset4loc_1.dataset_directory  + dataset4loc_1.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now))
-        draw_graph.draw_graph_regress(learner.module.epochs, epoch, train_loss, test_loss, os.path.basename(dataset4loc_1.dataset_folder), save_place=dataset4loc_1.dataset_directory  + dataset4loc_1.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now))
+        draw_graph.draw_graph_regress(learner.module.epochs, epoch, train_loss, test_loss, os.path.basename(dataset4loc_1.dataset_folder), save_place=dataset4loc_1.dataset_directory  + dataset4loc_1.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now), ymax=300.0)
         
         hp_for_record= get_arguments()
         otherparams = []
@@ -300,10 +352,7 @@ def main(learner):
         
         print_result(rsl[-1].values())
         scheduler.step()
-        
-        #torch.save(learner.state_dict(), dataset4loc_1.dataset_directory  + dataset4loc_1.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now) + os.path.basename(dataset4loc_1.dataset_folder) + '_{0:%m%d}_{0:%H%M}.pth'.format(now, now))
-        torch.save(learner.module.state_dict(), dataset4loc_1.dataset_directory  + dataset4loc_1.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now) + os.path.basename(dataset4loc_1.dataset_folder) + '_{0:%m%d}_{0:%H%M}.pth'.format(now, now))
-        
+          
         if earlystopper == 1:
             write_gspread.update_gspread(dataset4loc_1.dataset_folder, 'WRN', dataset4loc_1.dataset_directory, now, 'N/A(regress)', train_loss, 'N/A(regress)', test_loss, epoch+1, learner.module.epochs, True, save_place, otherparams)
             break

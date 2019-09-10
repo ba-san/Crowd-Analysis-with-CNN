@@ -28,20 +28,12 @@ def get_data(batch_size):
     global dataset_folder, dataset_directory, test_classes
     dataset_directory = os.path.dirname(os.getcwd())
     dataset_folder = "./dataset/C0017_output_256_256_18_18_0_resized_32_32" #set dataset here
-   
-    #normalize = transforms.Normalize(mean=[0.4914, 0.4824, 0.4467], std=[0.2471, 0.2435, 0.2616]) #this is for CIFAR100
 
     transform_train = transforms.Compose([
-                                #transforms.Pad(4, padding_mode = 'reflect'), # https://stackoverflow.com/questions/52471817/performing-a-reflective-center-pad-on-an-image
-                                #transforms.RandomCrop(32), # resized to 32x32
                                 transforms.RandomHorizontalFlip(), # whether flip or not is random, not axis is random.
                                 transforms.ToTensor()])
-                                #transforms.RandomErasing()])
-                                #normalize]) 
     transform_test = transforms.Compose([
                                 transforms.ToTensor()])
-                                #normalize])
-
                         
     train_dataset = ImageFolderWithPaths(
                         root = dataset_directory  + dataset_folder[1:] + "/train",

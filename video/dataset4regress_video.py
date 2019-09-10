@@ -30,8 +30,6 @@ num_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
 def readVideo(videoFile):
 	global xSize, ySize, timeDepth, channels
 	cap = cv2.VideoCapture(videoFile)
-	# nFrames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-	# print('nFrames:{}'.format(nFrames))
 	frames = torch.FloatTensor(timeDepth, ySize, xSize, channels)
 	failedClip = False
 	for f in range(timeDepth):
@@ -46,9 +44,6 @@ def readVideo(videoFile):
 			failedClip = True
 			break
 
-	#for c in range(3):
-		#frames[c] -= self.mean[c]
-	#frames /= 255
 	return frames, failedClip
         
         
@@ -104,7 +99,6 @@ class videoDataset(Dataset):
         img = self.transform(img)
         
         return img
-    
       
 def get_data(batch_size):
     transform_test = transforms.Compose([

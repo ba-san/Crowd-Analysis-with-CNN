@@ -15,10 +15,10 @@ def update_gspread(dset_fname, network_name, dataset_directory, tstamp, train_ac
 	### open google spreadsheet ###
 	scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 
-	credentials = ServiceAccountCredentials.from_json_keyfile_name('../AIST-crowd-counting-prj-9aed4a5cf2e3.json', scope)
+	credentials = ServiceAccountCredentials.from_json_keyfile_name('something.json', scope)
 	gc = gspread.authorize(credentials)
-	final_wks = gc.open('AIST-crowd-counting-results').worksheet("Final")
-	last_wks = gc.open('AIST-crowd-counting-results').worksheet("Last")
+	final_wks = gc.open('sheetname').worksheet("Final")
+	last_wks = gc.open('sheetname').worksheet("Last")
 
 
 	### updating ###

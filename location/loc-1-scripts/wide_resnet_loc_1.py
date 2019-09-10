@@ -74,6 +74,7 @@ class WideResNet(nn.Module):
         self.n_chs = [ 16, 16 * self.hyperparameters.width_coef1, 32 * self.hyperparameters.width_coef2, 64 * self.hyperparameters.width_coef3 ]
         self.epochs = 200
         self.lr_step = [60, 120, 160]
+        self.variance4pool = 8 # variance4pool = image_side/4
         
         self.conv1 = nn.Conv2d(3, self.n_chs[0], 3, padding = 1, bias = False)
         self.conv2 = self._add_groups(self.n_blocks[0], self.n_chs[0], self.n_chs[1], self.hyperparameters.drop_rates1)
@@ -97,7 +98,7 @@ class WideResNet(nn.Module):
         h = self.conv3(h)
         h = self.conv4(h)
         h = F.relu(self.bn(h), inplace = True)
-        h = F.avg_pool2d(h, 8)
+        h = F.avg_pool2d(h, self.variance4pool)
         h = h.view(-1, self.n_chs[3])
         h = self.full_conn(h)
         

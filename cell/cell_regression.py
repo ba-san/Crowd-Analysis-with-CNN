@@ -24,23 +24,6 @@ from wide_resnet_regress import WideResNet
 
 from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
-
-####### original parameters #######
-
-    #hp = {"batch_size": 128,
-           #"lr": 1.0e-1,
-           #"momentum": 0.9,
-           #"weight_decay": 5.0e-4,
-           #"width_coef1": 10,
-           #"width_coef2": 10,
-           #"width_coef3": 10,
-           #"n_blocks1": 4,
-           #"n_blocks2": 4,
-           #"n_blocks3": 4,
-           #"drop_rates1": 0.3,
-           #"drop_rates2": 0.3,
-           #"drop_rates3": 0.3,
-           #"lr_decay": 0.2}
            
 def get_arguments():
     argp = ArgPar()
@@ -75,7 +58,6 @@ def print_result(values):
     f2 = "}  "
     f_int = "{}:<20"
     f_float = "{}:<20.5f"
-
     f_vars = ""
     
     for i, v in enumerate(values):
@@ -129,9 +111,7 @@ def test(device, optimizer, learner, test_data, loss_func):
             shutil.copyfile(paths_total[i], dataset4regress_cell.dataset_directory + '/' + dataset4regress_cell.dataset_folder[1:] + '/log/{0:%m%d}_{0:%H%M}/false_pred_{1}/{2}/{3}/'.format(now, 0, np.array(target_total_test)[i], np.array(int_y_total)[i]) + splited_path[-1])
             bar.update()
         bar.close()
-
-    #draw_graph.plot_confusion_matrix(target_total_test, int_y_total, dataset4regress_cell.num_list, save_caption=dataset4regress_cell.dataset_folder, save_place=dataset4regress_cell.dataset_directory + dataset4regress_cell.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now))
-    
+   
     draw_graph.ppl_in_cell(np.array(target_total_test), dataset4regress_cell.ori_width, dataset4regress_cell.ori_height, 32,  'target_ppl_part_num', save_place=dataset4regress_cell.dataset_directory + '/' + dataset4regress_cell.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now), caltype="sum")
     draw_graph.ppl_in_cell(np.array(int_y_total), dataset4regress_cell.ori_width, dataset4regress_cell.ori_height, 32, 'pred_ppl_part_num', save_place=dataset4regress_cell.dataset_directory + '/' + dataset4regress_cell.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now), caltype="sum")  ## change here according to CellDataset or FrameDataset.
     draw_graph.ppl_in_cell(np.array(int_y_total)-np.array(target_total_test), dataset4regress_cell.ori_width, dataset4regress_cell.ori_height, 32, 'diff_ppl_part_num', save_place=dataset4regress_cell.dataset_directory + '/' + dataset4regress_cell.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now), caltype="diff")
@@ -189,9 +169,8 @@ if __name__ == "__main__":
     learner = WideResNet(hyperparameters)
     
     model = "4frames-extracted_output_x_x_18_18_0_resized_32_32_0714_1948.pth" #set model here
-    learner.load_state_dict(torch.load('../dataset/4frames-extracted_output_x_x_18_18_0_resized_32_32/log/0714_1948/' + model), strict=False)  # set pretrained model here!
+    learner.load_state_dict(torch.load('../dataset/resized/4frames-extracted_output_x_x_18_18_0_resized_32_32/log/0714_1948/' + model), strict=False)  # set pretrained model here!
     
     print("Start Testing")
     print("")
     main(learner)
-

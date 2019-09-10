@@ -23,23 +23,6 @@ from wide_resnet_regress import WideResNet
 
 from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
-
-####### original parameters #######
-
-    #hp = {"batch_size": 128,
-           #"lr": 1.0e-1,
-           #"momentum": 0.9,
-           #"weight_decay": 5.0e-4,
-           #"width_coef1": 10,
-           #"width_coef2": 10,
-           #"width_coef3": 10,
-           #"n_blocks1": 4,
-           #"n_blocks2": 4,
-           #"n_blocks3": 4,
-           #"drop_rates1": 0.3,
-           #"drop_rates2": 0.3,
-           #"drop_rates3": 0.3,
-           #"lr_decay": 0.2}
            
 def get_arguments():
     argp = ArgPar()
@@ -97,7 +80,7 @@ def test(device, optimizer, learner, test_data, loss_func):
     
     for batch_idx, (data, target, paths) in enumerate(test_data):
         data, target_tensor = data.to(device), target.to(device)
-        	
+        
         y = learner(data)
         int_y = (y+0.5).int()
         
@@ -175,8 +158,8 @@ def main(learner):
             
     time_now = str(datetime.datetime.today())
     rsl.append({k: v for k, v in zip(rsl_keys, [lr, test_loss, time_now])})
-    print_result(rsl[-1].values())     
-
+    print_result(rsl[-1].values())
+    
         
 if __name__ == "__main__":
     hp_dict = get_arguments()
@@ -184,10 +167,9 @@ if __name__ == "__main__":
     hyperparameters = hp_tuple(**hp_dict)
     learner = WideResNet(hyperparameters)
     
-    model = "4frames-extracted_output_x_x_18_18_0_resized_32_32_0714_1948.pth" # set model here
-    learner.load_state_dict(torch.load('../dataset/4frames-extracted_output_x_x_18_18_0_resized_32_32/log/0714_1948/' + model), strict=False)  # set pretrained model here!
+    model = "C0017_output_256_256_18_18_0_resized_32_32_0910_1546.pth" # set model here
+    learner.load_state_dict(torch.load('../dataset/C0017_output_256_256_18_18_0_resized_32_32/log/0910_1546/' + model), strict=False)  # set pretrained model here!
     
     print("Start Testing")
     print("")
     main(learner)
-

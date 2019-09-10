@@ -112,27 +112,26 @@ def test(device, optimizer, learner, test_data, loss_func):
             shutil.copyfile(paths_total[i], dataset4regress_frame.dataset_directory + '/' + dataset4regress_frame.dataset_folder[1:] + '/log/{0:%m%d}_{0:%H%M}/false_pred_{1}/{2}/{3}/'.format(now, 0, np.array(target_total_test)[i], np.array(int_y_total)[i]) + splited_path[-1])
             bar.update()
         bar.close()
-
-    #draw_graph.yyplot_density(np.array(target_total_test), np.array(y_total_test), False, save_place=dataset4regress_frame.dataset_directory + '/' + dataset4regress_frame.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now))
-    #draw_graph.plot_confusion_matrix(target_total_test, int_y_total, dataset4regress_frame.num_list, save_caption=dataset4regress_frame.dataset_folder, save_place=dataset4regress_frame.dataset_directory + dataset4regress_frame.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now))
-    
+  
     f = open(dataset4regress_frame.dataset_directory + '/' + dataset4regress_frame.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now) + 'target_heatmap.txt', 'w')
     f2 = open(dataset4regress_frame.dataset_directory + '/' + dataset4regress_frame.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now) + 'prediction_heatmap.txt', 'w')
-    blank_target = np.zeros((dataset4regress_frame.ori_height, dataset4regress_frame.ori_width, 3), np.uint8)
-    blank_target_pt = np.zeros((dataset4regress_frame.ori_height, dataset4regress_frame.ori_width, 3), np.uint8)
-    blank_pred = np.zeros((dataset4regress_frame.ori_height, dataset4regress_frame.ori_width, 3), np.uint8)
+    blank_target = np.zeros((dataset4regress_frame.ori_height-32, dataset4regress_frame.ori_width-32, 3), np.uint8)
+    blank_target_pt = np.zeros((dataset4regress_frame.ori_height-32, dataset4regress_frame.ori_width-32, 3), np.uint8)
+    blank_pred = np.zeros((dataset4regress_frame.ori_height-32, dataset4regress_frame.ori_width-32, 3), np.uint8)
     bar = tqdm(desc = "making heatmap...", total = len(np.array(target_total_test)), leave = False)
     
     for pt in range(len(dataset4regress_frame.df)):
-        blank_target_pt[int(dataset4regress_frame.df.loc[pt, 'y']-16), int(dataset4regress_frame.df.loc[pt, 'x']-16)] = [18, 0, 230]
+        #blank_target_pt[int(dataset4regress_frame.df.loc[pt, 'y']-16), int(dataset4regress_frame.df.loc[pt, 'x']-16)] = [18, 0, 230] # for padding img
+        if 16 < int(dataset4regress_frame.df.loc[pt, 'y']) and int(dataset4regress_frame.df.loc[pt, 'y']) < dataset4regress_frame.ori_height-16 and 16 < int(dataset4regress_frame.df.loc[pt, 'x']) and int(dataset4regress_frame.df.loc[pt, 'x']) < dataset4regress_frame.ori_width-16: # for no padding img
+            blank_target_pt[int(dataset4regress_frame.df.loc[pt, 'y']-16), int(dataset4regress_frame.df.loc[pt, 'x']-16)] = [18, 0, 230] # for no padding img
     target_total_pt = []
         
     for pt in range(len(np.array(target_total_test))):
         if pt!=0 and pt%dataset4regress_frame.ori_width==0:
             f.write("\n")
             f2.write("\n")
-        img_x = pt%dataset4regress_frame.ori_width
-        img_y = int(pt/dataset4regress_frame.ori_width)
+        img_x = pt%(dataset4regress_frame.ori_width-32)
+        img_y = int(pt/(dataset4regress_frame.ori_width-32))
         
         if target_total_test[pt]==0:
             blank_target[img_y, img_x] = [255,255,255]  # white
@@ -193,11 +192,9 @@ def test(device, optimizer, learner, test_data, loss_func):
     f.close()
     f2.close()
     
-    #draw_graph.ppl_in_frame(np.array(target_total_test), dataset4regress_frame.ori_width, dataset4regress_frame.ori_height, 32,  'target_ppl_part_num', save_place=dataset4regress_frame.dataset_directory + '/' + dataset4regress_frame.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now), caltype="ave")
-    draw_graph.ppl_in_frame(32*32*np.array(target_total_pt), dataset4regress_frame.ori_width, dataset4regress_frame.ori_height, 32,  'target_ppl_part_num', save_place=dataset4regress_frame.dataset_directory + '/' + dataset4regress_frame.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now), caltype="ave")
-    draw_graph.ppl_in_frame(np.array(int_y_total), dataset4regress_frame.ori_width, dataset4regress_frame.ori_height, 32, 'pred_ppl_part_num', save_place=dataset4regress_frame.dataset_directory + '/' + dataset4regress_frame.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now), caltype="ave")  ## change here according to CellDataset or FrameDataset.
-    #draw_graph.ppl_in_frame(np.array(int_y_total)-np.array(target_total_test), dataset4regress_frame.ori_width, dataset4regress_frame.ori_height, 32, 'diff_ppl_part_num', save_place=dataset4regress_frame.dataset_directory + '/' + dataset4regress_frame.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now), caltype="diff")
-    draw_graph.ppl_in_frame(np.array(int_y_total)-32*32*np.array(target_total_pt), dataset4regress_frame.ori_width, dataset4regress_frame.ori_height, 32, 'diff_ppl_part_num', save_place=dataset4regress_frame.dataset_directory + '/' + dataset4regress_frame.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now), caltype="diff")
+    draw_graph.ppl_in_frame(32*32*np.array(target_total_pt), dataset4regress_frame.ori_width-32, dataset4regress_frame.ori_height-32, 32,  'target_ppl_part_num', save_place=dataset4regress_frame.dataset_directory + '/' + dataset4regress_frame.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now), caltype="ave")
+    draw_graph.ppl_in_frame(np.array(int_y_total), dataset4regress_frame.ori_width-32, dataset4regress_frame.ori_height-32, 32, 'pred_ppl_part_num', save_place=dataset4regress_frame.dataset_directory + '/' + dataset4regress_frame.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now), caltype="ave")  ## change here according to CellDataset or FrameDataset.
+    draw_graph.ppl_in_frame(np.array(int_y_total)-32*32*np.array(target_total_pt), dataset4regress_frame.ori_width-32, dataset4regress_frame.ori_height-32, 32, 'diff_ppl_part_num', save_place=dataset4regress_frame.dataset_directory + '/' + dataset4regress_frame.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now), caltype="diff")
     
     cv2.imwrite(dataset4regress_frame.dataset_directory + '/' + dataset4regress_frame.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now) + 'target_heatmap.jpg', blank_target)
     cv2.imwrite(dataset4regress_frame.dataset_directory + '/' + dataset4regress_frame.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now) + 'prediction_heatmap.jpg', blank_pred)  
@@ -254,7 +251,7 @@ if __name__ == "__main__":
     learner = WideResNet(hyperparameters)
     
     model = "4frames-extracted_output_x_x_18_18_0_resized_32_32_0714_1948.pth" #set model here
-    learner.load_state_dict(torch.load('../dataset/4frames-extracted_output_x_x_18_18_0_resized_32_32/log/0714_1948/' + model), strict=False)  # set pretrained model here!
+    learner.load_state_dict(torch.load('../dataset/resized/4frames-extracted_output_x_x_18_18_0_resized_32_32/log/0714_1948/' + model), strict=False)  # set pretrained model here!
     
     print("Start Testing")
     print("")

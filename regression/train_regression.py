@@ -16,31 +16,14 @@ import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import torch.optim as optim
 import datetime
-from dataset4regress_NOCHANGE import get_data
-import dataset4regress_NOCHANGE
+from dataset4regress import get_data
+import dataset4regress
 from tqdm import tqdm
-from wide_resnet_regress_NOCHANGE import WideResNet
+from wide_resnet_regress import WideResNet
 
 from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
 
-####### original parameters #######
-
-    #hp = {"batch_size": 128,
-           #"lr": 1.0e-1,
-           #"momentum": 0.9,
-           #"weight_decay": 5.0e-4,
-           #"width_coef1": 10,
-           #"width_coef2": 10,
-           #"width_coef3": 10,
-           #"n_blocks1": 4,
-           #"n_blocks2": 4,
-           #"n_blocks3": 4,
-           #"drop_rates1": 0.3,
-           #"drop_rates2": 0.3,
-           #"drop_rates3": 0.3,
-           #"lr_decay": 0.2}
-           
 def get_arguments():
     argp = ArgPar()
     hp = {"batch_size": 128,
@@ -115,7 +98,7 @@ def train(device, optimizer, learner, train_data, loss_func):
         bar.set_description("Loss(MSE): {0:.6f}".format(train_loss / n_train))      
         bar.update()
     bar.close()
-    draw_graph.yyplot_density(np.array(target_total_train), np.array(y_total_train), True, save_place=dataset4regress_NOCHANGE.dataset_directory  + dataset4regress_NOCHANGE.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now))
+    draw_graph.yyplot_density(np.array(target_total_train), np.array(y_total_train), True, save_place=dataset4regress.dataset_directory  + dataset4regress.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now))
     
     return train_loss / n_train
 
@@ -154,13 +137,13 @@ def test(device, optimizer, learner, test_data, loss_func):
     if counter+1 >= patience or epoch == learner.module.epochs-1: # or epoch%30==0:
         for i in range(len(target_total_test)):
             splited_path = paths_total[i].split('/')
-            if not os.path.exists(dataset4regress_NOCHANGE.dataset_directory + '/' + dataset4regress_NOCHANGE.dataset_folder[1:] + '/log/{0:%m%d}_{0:%H%M}/false_pred_{1}/{2}/{3}/'.format(now, epoch, np.array(target_total_test)[i], np.array(int_y_total)[i])):
-                 os.makedirs(dataset4regress_NOCHANGE.dataset_directory + '/' + dataset4regress_NOCHANGE.dataset_folder[1:] + '/log/{0:%m%d}_{0:%H%M}/false_pred_{1}/{2}/{3}/'.format(now, epoch, np.array(target_total_test)[i], np.array(int_y_total)[i]))
-            shutil.copyfile(paths_total[i], dataset4regress_NOCHANGE.dataset_directory + '/' + dataset4regress_NOCHANGE.dataset_folder[1:] + '/log/{0:%m%d}_{0:%H%M}/false_pred_{1}/{2}/{3}/'.format(now, epoch, np.array(target_total_test)[i], np.array(int_y_total)[i]) + splited_path[-1])
-        draw_graph.plot_confusion_matrix(target_total_test, int_y_total, dataset4regress_NOCHANGE.num_list, save_caption=dataset4regress_NOCHANGE.dataset_folder, save_place=dataset4regress_NOCHANGE.dataset_directory + '/' + dataset4regress_NOCHANGE.dataset_folder[1:] + '/log/{0:%m%d}_{0:%H%M}/false_pred_{1}/'.format(now, epoch))
+            if not os.path.exists(dataset4regress.dataset_directory + '/' + dataset4regress.dataset_folder[1:] + '/log/{0:%m%d}_{0:%H%M}/false_pred_{1}/{2}/{3}/'.format(now, epoch, np.array(target_total_test)[i], np.array(int_y_total)[i])):
+                 os.makedirs(dataset4regress.dataset_directory + '/' + dataset4regress.dataset_folder[1:] + '/log/{0:%m%d}_{0:%H%M}/false_pred_{1}/{2}/{3}/'.format(now, epoch, np.array(target_total_test)[i], np.array(int_y_total)[i]))
+            shutil.copyfile(paths_total[i], dataset4regress.dataset_directory + '/' + dataset4regress.dataset_folder[1:] + '/log/{0:%m%d}_{0:%H%M}/false_pred_{1}/{2}/{3}/'.format(now, epoch, np.array(target_total_test)[i], np.array(int_y_total)[i]) + splited_path[-1])
+        draw_graph.plot_confusion_matrix(target_total_test, int_y_total, dataset4regress.num_list, save_caption=dataset4regress.dataset_folder, save_place=dataset4regress.dataset_directory + '/' + dataset4regress.dataset_folder[1:] + '/log/{0:%m%d}_{0:%H%M}/false_pred_{1}/'.format(now, epoch))
 
-    draw_graph.yyplot_density(np.array(target_total_test), np.array(y_total_test), False, save_place=dataset4regress_NOCHANGE.dataset_directory + '/' + dataset4regress_NOCHANGE.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now))
-    draw_graph.plot_confusion_matrix(target_total_test, int_y_total, dataset4regress_NOCHANGE.num_list, save_caption=dataset4regress_NOCHANGE.dataset_folder, save_place=dataset4regress_NOCHANGE.dataset_directory + dataset4regress_NOCHANGE.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now))
+    draw_graph.yyplot_density(np.array(target_total_test), np.array(y_total_test), False, save_place=dataset4regress.dataset_directory + '/' + dataset4regress.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now))
+    draw_graph.plot_confusion_matrix(target_total_test, int_y_total, dataset4regress.num_list, save_caption=dataset4regress.dataset_folder, save_place=dataset4regress.dataset_directory + dataset4regress.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now))
 
     return test_loss / n_test
 
@@ -174,19 +157,16 @@ def main(learner):
     
     global now
     now = datetime.datetime.now()
-    if not os.path.exists(dataset4regress_NOCHANGE.dataset_directory  + dataset4regress_NOCHANGE.dataset_folder + '/log/{0:%m%d}_{0:%H%M}'.format(now, now)):
-        os.makedirs(dataset4regress_NOCHANGE.dataset_directory  + dataset4regress_NOCHANGE.dataset_folder + '/log/{0:%m%d}_{0:%H%M}'.format(now, now))
+    if not os.path.exists(dataset4regress.dataset_directory  + dataset4regress.dataset_folder + '/log/{0:%m%d}_{0:%H%M}'.format(now, now)):
+        os.makedirs(dataset4regress.dataset_directory  + dataset4regress.dataset_folder + '/log/{0:%m%d}_{0:%H%M}'.format(now, now))
     
     learner = learner.to(device)
     cudnn.benchmark = True
 
     optimizer = optim.SGD( \
                         learner.parameters(), \
-                        #lr = learner.lr, \
                         lr = learner.module.lr, \
-                        #momentum = learner.momentum, \
                         momentum = learner.module.momentum, \
-                        #weight_decay = learner.weight_decay, \
                         weight_decay = learner.module.weight_decay, \
                         nesterov = True \
                         )
@@ -194,11 +174,8 @@ def main(learner):
     #this is not RMSE
     loss_mse = nn.MSELoss().cuda()
 
-    #milestones = learner.lr_step
     milestones = learner.module.lr_step
-    #scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones = milestones, gamma = learner.lr_decay)
     scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones = milestones, gamma = learner.module.lr_decay)
-
 
     rsl_keys = ["lr", "epoch", "TrainLoss", "TestLoss", "Time"]
     rsl = []
@@ -211,7 +188,6 @@ def main(learner):
     earlystopper = 0
     best_loss = None
     
-    #for epoch in range(learner.epochs):
     for epoch in range(learner.module.epochs):
         
         lr = optimizer.param_groups[0]["lr"] 
@@ -238,12 +214,10 @@ def main(learner):
                 counter = 0
             ######################
 
-
         time_now = str(datetime.datetime.today())
         rsl.append({k: v for k, v in zip(rsl_keys, [lr, epoch + 1, train_loss, test_loss, time_now])})
      
-        #draw_graph.draw_graph_regress(learner.epochs, epoch, train_loss, test_loss, os.path.basename(dataset4regress_NOCHANGE.dataset_folder), save_place=dataset4regress_NOCHANGE.dataset_directory  + dataset4regress_NOCHANGE.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now))
-        draw_graph.draw_graph_regress(learner.module.epochs, epoch, train_loss, test_loss, os.path.basename(dataset4regress_NOCHANGE.dataset_folder), save_place=dataset4regress_NOCHANGE.dataset_directory  + dataset4regress_NOCHANGE.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now))
+        draw_graph.draw_graph_regress(learner.module.epochs, epoch, train_loss, test_loss, os.path.basename(dataset4regress.dataset_folder), save_place=dataset4regress.dataset_directory  + dataset4regress.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now))
         
         hp_for_record= get_arguments()
         otherparams = []
@@ -263,17 +237,16 @@ def main(learner):
         otherparams.append(hp_for_record["lr_decay"])
         otherparams.append(time_now)
 
-        save_place = dataset4regress_NOCHANGE.dataset_directory + dataset4regress_NOCHANGE.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now)
-        write_gspread.update_gspread(dataset4regress_NOCHANGE.dataset_folder, 'WRN', dataset4regress_NOCHANGE.dataset_directory, now, 'N/A(regress)', train_loss, 'N/A(regress)', test_loss, epoch+1, learner.module.epochs, False, save_place, otherparams)
+        save_place = dataset4regress.dataset_directory + dataset4regress.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now)
+        #write_gspread.update_gspread(dataset4regress.dataset_folder, 'WRN', dataset4regress.dataset_directory, now, 'N/A(regress)', train_loss, 'N/A(regress)', test_loss, epoch+1, learner.module.epochs, False, save_place, otherparams)
         
         print_result(rsl[-1].values())
         scheduler.step()
         
-        #torch.save(learner.state_dict(), dataset4regress_NOCHANGE.dataset_directory  + dataset4regress_NOCHANGE.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now) + os.path.basename(dataset4regress_NOCHANGE.dataset_folder) + '_{0:%m%d}_{0:%H%M}.pth'.format(now, now))
-        torch.save(learner.module.state_dict(), dataset4regress_NOCHANGE.dataset_directory  + dataset4regress_NOCHANGE.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now) + os.path.basename(dataset4regress_NOCHANGE.dataset_folder) + '_{0:%m%d}_{0:%H%M}.pth'.format(now, now))
+        torch.save(learner.module.state_dict(), dataset4regress.dataset_directory  + dataset4regress.dataset_folder + '/log/{0:%m%d}_{0:%H%M}/'.format(now, now) + os.path.basename(dataset4regress.dataset_folder) + '_{0:%m%d}_{0:%H%M}.pth'.format(now, now))
         
         if earlystopper == 1:
-            write_gspread.update_gspread(dataset4regress_NOCHANGE.dataset_folder, 'WRN', dataset4regress_NOCHANGE.dataset_directory, now, 'N/A(regress)', train_loss, 'N/A(regress)', test_loss, epoch+1, learner.module.epochs, True, save_place, otherparams)
+            #write_gspread.update_gspread(dataset4regress.dataset_folder, 'WRN', dataset4regress.dataset_directory, now, 'N/A(regress)', train_loss, 'N/A(regress)', test_loss, epoch+1, learner.module.epochs, True, save_place, otherparams)
             break
         
 if __name__ == "__main__":
@@ -285,4 +258,3 @@ if __name__ == "__main__":
     print("Start Training")
     print("")
     main(learner)
-

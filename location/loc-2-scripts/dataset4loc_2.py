@@ -13,11 +13,11 @@ from torch.utils.data import Dataset
 from PIL import Image
 
 PWD = os.path.dirname(os.path.dirname(os.getcwd()))
-files = "/dataset/loc-2-raster_output_x_x_x_x_x_resized_x_x"
+files = "/dataset/resized/loc-2/loc-2-extensive-extracted-raster_output_x_x_x_x_x_resized_x_x"
 
 full_path = PWD + files
-train_files = glob.glob(full_path + "/train/*")
-test_files = glob.glob(full_path + "/test/*")
+train_files = glob.glob(full_path + "/train/2/*")
+test_files = glob.glob(full_path + "/test/2/*")
 print(len(train_files))
 print(len(test_files))
 
@@ -112,7 +112,7 @@ class LocationDataset(Dataset):
 
         if self.transform is not None:
             img = self.transform(img)
-        
+
         #location = self.y[index]
         #location = [[a, b] for (a, b) in zip(self.y[index*2], self.y[index*2+1])]
         location = [self.y[index*2], self.y[index*2+1]]
@@ -122,25 +122,24 @@ class LocationDataset(Dataset):
 
     def __len__(self):
         return int(self.img_paths.shape[0]/2)
-
     
     
 def get_data(batch_size):
     global dataset_folder, dataset_directory, test_classes
     dataset_directory = os.path.dirname(os.path.dirname(os.getcwd()))
     dataset_folder = files
+    list4flip = []
    
     #normalize = transforms.Normalize(mean=[0.4914, 0.4824, 0.4467], std=[0.2471, 0.2435, 0.2616]) #this is for CIFAR100
+    normalize = transforms.Normalize(mean=[2.3930416, 1.8628291, 0.6968143], std=[0.24795742, 0.24435875, 0.26251334])
 
     transform_train = transforms.Compose([
-                                #transforms.Pad(4, padding_mode = 'reflect'), # https://stackoverflow.com/questions/52471817/performing-a-reflective-center-pad-on-an-image
-                                #transforms.RandomCrop(32), # resized to 32x32
-                                transforms.RandomHorizontalFlip(), # whether flip or not is random, not axis is random.
-                                transforms.ToTensor()])
-                                #normalize]) 
+                                #transforms.RandomHorizontalFlipCustom(list4flip),
+                                transforms.ToTensor(),
+                                normalize])
     transform_test = transforms.Compose([
-                                transforms.ToTensor()])
-                                #normalize])
+                                transforms.ToTensor(),
+                                normalize])
 
                         
     train_dataset = LocationDataset(
@@ -155,4 +154,28 @@ def get_data(batch_size):
     train_data = torch.utils.data.DataLoader(train_dataset, batch_size = batch_size, shuffle = True, num_workers = 4, pin_memory = True)
     test_data = torch.utils.data.DataLoader(test_dataset, batch_size = batch_size, shuffle = False, num_workers = 4, pin_memory = True)
     
+    #### https://forums.fast.ai/t/image-normalization-in-pytorch/7534/7
+    ######################   for normalization   ######################
+    #######!!   CHANGE BATCH SIZE BEFORE CHECKING STATISTICS   !!######
+    pop_mean = []
+    pop_std0 = []
+    pop_std1 = []
+    for i, (data, target, paths)in enumerate(train_data, 0):
+        # shape (batch_size, 3, height, width)
+        numpy_image = data.numpy()
+    
+        # shape (3,)
+        batch_mean = np.mean(numpy_image, axis=(0,2,3))
+        batch_std0 = np.std(numpy_image, axis=(0,2,3))
+    
+        pop_mean.append(batch_mean)
+        pop_std0.append(batch_std0)
+
+    # shape (num_iterations, 3) -> (mean across 0th axis) -> shape (3,)
+    pop_mean = np.array(pop_mean).mean(axis=0)
+    pop_std0 = np.array(pop_std0).mean(axis=0)
+    print('pop_mean:{}, pop_std0:{}'.format(pop_mean, pop_std0))
+    #change batchsize also!!!  #exit()
+    ###################################################################
+
     return train_data, test_data
