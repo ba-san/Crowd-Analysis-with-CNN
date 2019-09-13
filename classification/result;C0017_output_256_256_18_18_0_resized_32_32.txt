@@ -1,0 +1,6 @@
+accuracy: 0.2275974025974026
+accuracy (accepting one person error): 0.42272727272727273
+accuracy (accepting two people error): 0.5496753246753247
+MAE: 2.4457792207792206
+MSE: 10.282792207792207
+RMSE: 3.20667931165438
