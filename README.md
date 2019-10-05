@@ -1,6 +1,4 @@
 # Crowd-Analysis-with-CNN
-
-<<<<<<< HEAD
 For its network, I borrowed WideResNet from [here](https://github.com/nabenabe0928/wide-resnet-pytorch).  
 
 ## guidance
@@ -43,5 +41,4 @@ For detailed info, please check each directory.
 ## Requirements 
 ・python3.7  
 ・pytorch   
->>>>>>> 7cbfd76a662d193fde37e6f851684ce7577d15a5
     `conda install pytorch torchvision cudatoolkit=x.x -c pytorch` 
