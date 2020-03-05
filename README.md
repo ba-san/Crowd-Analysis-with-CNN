@@ -11,7 +11,7 @@ For its network, I borrowed WideResNet from [here](https://github.com/nabenabe09
 ## requirements   
 python3.7&pytorch  
 
-=======
+=======  
 For its network, I used WideResNet from [here](https://github.com/nabenabe0928/wide-resnet-pytorch).  
 
 ## Guidance
