@@ -1,5 +1,5 @@
 # Crowd-Analysis-with-CNN
-For its network, I borrowed WideResNet from [here](https://github.com/nabenabe0928/wide-resnet-pytorch).  
+For its network, I modified WideResNet from [here](https://github.com/nabenabe0928/wide-resnet-pytorch).  
 
 ## guidance
 **classification&regression** - estimate just num of ppl in cropped img by classification approach or regression approach  
@@ -10,9 +10,6 @@ For its network, I borrowed WideResNet from [here](https://github.com/nabenabe09
 
 ## requirements   
 python3.7&pytorch  
-
-=======  
-For its network, I modified WideResNet from [here](https://github.com/nabenabe0928/wide-resnet-pytorch).  
 
 ## Guidance
 For detailed info, please check each directory.  
