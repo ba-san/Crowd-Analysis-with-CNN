@@ -26,7 +26,7 @@ For detailed info, please check each directory.
 
 **video** - create density map video.  
 
-### Location estimation
+### Location estimation (under development)
 <img src="https://user-images.githubusercontent.com/44015510/64599810-05d7fc80-d3f5-11e9-84e5-ef6e9fbce0f4.JPG" width="500"> 
 
 **location** - with output from number of people estimating network (i.e. **classification&regression**), you can estimate exact coordinates of people in those imgs.  
